@@ -78,7 +78,7 @@ struct s3c24x0_interrupt {
 	u32	PRIORITY;
 	u32	INTPND;
 	u32	INTOFFSET;
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	u32	SUBSRCPND;
 	u32	INTSUBMSK;
 #endif
@@ -88,7 +88,7 @@ struct s3c24x0_interrupt {
 /* DMAS (see manual chapter 8) */
 struct s3c24x0_dma {
 	u32	DISRC;
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	u32	DISRCC;
 #endif
 	u32	DIDST;
@@ -103,7 +103,7 @@ struct s3c24x0_dma {
 #ifdef CONFIG_S3C2400
 	u32	res[1];
 #endif
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	u32	res[7];
 #endif
 };
@@ -122,6 +122,9 @@ struct s3c24x0_clock_power {
 	u32	CLKCON;
 	u32	CLKSLOW;
 	u32	CLKDIVN;
+#if defined(CONFIG_S3C2440)
+	u32 CAMDIVN; /* for mini2440 */
+#endif
 };
 
 
@@ -141,7 +144,7 @@ struct s3c24x0_lcd {
 	u32	res[8];
 	u32	DITHMODE;
 	u32	TPAL;
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	u32	LCDINTPND;
 	u32	LCDSRCPND;
 	u32	LCDINTMSK;
@@ -397,7 +400,7 @@ struct s3c24x0_gpio {
 	u32	MISCCR;
 	u32	EXTINT;
 #endif
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	u32	GPACON;
 	u32	GPADAT;
 	u32	res1[2];

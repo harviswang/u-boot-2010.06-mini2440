@@ -86,7 +86,7 @@ extern void rtl8019_get_enetaddr (uchar * addr);
 #include <i2c.h>
 #endif
 
-
+#if 0
 /************************************************************************
  * Coloured LED functionality
  ************************************************************************
@@ -110,6 +110,7 @@ void inline __blue_LED_on(void) {}
 void blue_LED_on(void) __attribute__((weak, alias("__blue_LED_on")));
 void inline __blue_LED_off(void) {}
 void blue_LED_off(void) __attribute__((weak, alias("__blue_LED_off")));
+#endif
 
 /************************************************************************
  * Init Utilities							*

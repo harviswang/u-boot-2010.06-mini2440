@@ -156,7 +156,7 @@ export	ARCH CPU BOARD VENDOR SOC
 
 # set default to nothing for native builds
 ifeq ($(HOSTARCH),$(ARCH))
-CROSS_COMPILE ?=
+CROSS_COMPILE ?= arm-linux-
 endif
 
 # load other configuration
@@ -3050,6 +3050,9 @@ smdk2400_config	:	unconfig
 
 smdk2410_config	:	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm920t smdk2410 samsung s3c24x0
+
+mini2440_config :	unconfig
+	@$(MKCONFIG) $(@:_config=) arm arm920t mini2440 samsung s3c24x0
 
 spear300_config \
 spear310_config \

@@ -216,6 +216,7 @@ copyex:
 	bl	cpu_init_crit
 #endif
 
+#if 0
 #ifndef CONFIG_SKIP_RELOCATE_UBOOT
 relocate:				/* relocate U-Boot to RAM	    */
 	adr	r0, _start		/* r0 <- current position of code   */
@@ -234,6 +235,118 @@ copy_loop:
 	cmp	r0, r2			/* until source end addreee [r2]    */
 	ble	copy_loop
 #endif	/* CONFIG_SKIP_RELOCATE_UBOOT */
+#endif
+
+	/************CHECK_CODE_POSITION***************/
+	adr r0, _start      /* r0 <- current positon code */
+	ldr r1, _TEXT_BASE  /* test if we run from flash or RAM */
+	cmp r0, r1
+	beq stack_setup
+	/************CHECK_CODE_POSITION***************/
+
+	/************CHECK_BOOT_FLASH***************/
+	ldr r1, =((4<<28)|(3<<4)|(3<<2)) /* address of internal SRAM 0x4000003C */
+	mov r0, #0
+	str r0, [r1]
+
+	mov r1, #0x3C    /* address of mem 0x0000003C */
+	ldr r0, [r1]
+	cmp r0, #0
+	bne relocate    /* if equal means boot from nor flash */
+
+	/* recovery */
+	ldr r0, =(0xDEADBEEF)
+	ldr r1, =((4<<28)|(3<<4)|(3<<2))
+	str r0, [r1]
+	/************CHECK_BOOT_FLASH***************/
+
+/************NAND_BOOT***************/
+#ifdef CONFIG_S3C2440_NAND_BOOT
+#define oNFCONF 0x00
+#define oNFCONT 0x04
+#define oNFCMD  0x08
+#define oNFSTAT 0x20
+#define LENGTH_UBOOT 0x00060000
+	mov r1, #NAND_CTL_BASE
+	ldr r2, =((7<<12)|(7<<8)|(7<<4))
+	str r2, [r1, #oNFCONF]
+	ldr r2, [r1, #oNFCONF]
+
+	ldr r2, =((1<<4)|(0<<1)|(1<<0))
+	str r2, [r1, #oNFCONT]
+	ldr r2, [r1, #oNFCONT]
+
+	ldr r2, =(0x6)
+	str r2, [r1, #oNFSTAT]
+	ldr r2, [r1, #oNFSTAT]
+
+	mov r2, #0xFF
+	strb r2, [r1, #oNFCMD]
+
+	mov r3, #0
+nand1:
+	add r3, r3, #0x1
+	cmp r3, #0xA
+	blt nand1
+
+nand2:
+	ldr r2, [r1, #oNFSTAT]
+	tst r2, #0x4
+	beq nand2
+
+	ldr r2, [r1, #oNFCONT]
+	orr r2, r2, #0x2
+	str r2, [r1, #oNFCONT]
+
+	/* get ready to call C function (for nand_read()) */
+	ldr sp, DW_STACK_START
+	mov fp, #0
+	/* copy U-Boot to RAM, C_function(r0, r1, r2) */
+	ldr r0, =TEXT_BASE
+	mov r1, #0x0
+	mov r2, #LENGTH_UBOOT
+	bl nand_read_ll /* nand_read_ll() comes from C */
+	tst r0, #0x0
+	beq ok_nand_read
+
+bad_nand_read:
+	loop2:b loop2 /* infinite loop */
+
+ok_nand_read:
+	mov r0, #0
+	ldr r1, =TEXT_BASE
+	mov r2, #0x400
+go_next:
+	ldr r3, [r0], #4
+	ldr r4, [r1], #4
+	teq r3, r4
+	bne notmatch
+	subs r2, r2, #4
+	beq stack_setup
+	bne go_next
+notmatch:
+	loop3:b loop3 /* infinite loop */
+#endif
+/************NAND_BOOT***************/
+		
+/************NOR_BOOT***************/
+relocate: /* relocate U-Boot to RAM */
+	ldr r1, =(0xDEADBEEF)
+	cmp r0, r1
+	bne loop3
+/************CHECK_FOR_MAGIC_NUMBER***************/
+	adr r0, _start /* r0 <- current position code */
+	ldr r1, _TEXT_BASE /* test if we run from flash */
+	ldr r2, _armboot_start
+	ldr r3, _bss_start
+	sub r2, r3, r2 /* r2 <- size of armboot */
+	add r2, r0, r2 /* r2 <- source end address */
+copy_loop:
+	ldmia r0!, {r3-r10} /* copy to target address [r1] */
+	stmia r1!, {r3-r10} /* until source end address [r2] */
+	cmp r0, r2
+	ble copy_loop
+/************NOR_BOOT***************/
 
 	/* Set up the stack						    */
 stack_setup:
@@ -260,7 +373,8 @@ clbss_l:str	r2, [r0]		/* clear loop...                    */
 
 _start_armboot:	.word start_armboot
 
-
+.align 2
+DW_STACK_START:.word STACK_BASE+STACK_SIZE-4
 /*
  *************************************************************************
  *

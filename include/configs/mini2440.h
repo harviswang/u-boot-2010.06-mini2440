@@ -56,10 +56,20 @@
 /*
  * Hardware drivers
  */
+#if 0
 #define CONFIG_NET_MULTI
 #define CONFIG_CS8900		/* we have a CS8900 on-board */
 #define CONFIG_CS8900_BASE	0x19000300
 #define CONFIG_CS8900_BUS16	/* the Linux driver does accesses as shorts */
+#endif
+#define CONFIG_DM9000 /* we have a DM9000 on-board */
+#define CONFIG_DRIVER_DM9000 1
+#define CONFIG_NET_MULTI 1
+#define CONFIG_DM9000_NO_SROM 1
+#define CONFIG_DM9000_BASE 0x20000300 /* Net Card Select Addr */
+#define DM9000_IO   CONFIG_DM9000_BASE
+#define DM9000_DATA (CONFIG_DM9000_BASE + 4) /* Net Card Data Addr */
+
 
 /*
  * select serial console configuration
@@ -96,17 +106,19 @@
 #define CONFIG_CMD_DATE
 #define CONFIG_CMD_ELF
 #define CONFIG_CMD_NAND
-#define CONFIG_CMD_SAVEENV_
+#define CONFIG_CMD_SAVEENV
+#define CONFIG_CMD_PING
+#define CONFIG_CMD_NET
 #define CONFIG_AUTO_COMPLETE   /* command auto complete */
 #define CONFIG_CMDLINE_EDITING /* command history record */
 
 
 #define CONFIG_BOOTDELAY	3
 /*#define CONFIG_BOOTARGS	"root=ramfs devfs=mount console=ttySA0,9600" */
-/*#define CONFIG_ETHADDR	08:00:3e:26:0a:5b */
-#define CONFIG_NETMASK          255.255.255.0
-#define CONFIG_IPADDR		10.0.0.110
-#define CONFIG_SERVERIP		10.0.0.1
+#define CONFIG_ETHADDR	08:00:3e:26:0a:5b 
+#define CONFIG_NETMASK  255.255.255.0
+#define CONFIG_IPADDR	192.168.1.110
+#define CONFIG_SERVERIP	192.168.1.111
 /*#define CONFIG_BOOTFILE	"elinos-lart" */
 /*#define CONFIG_BOOTCOMMAND	"tftp; bootm" */
 
